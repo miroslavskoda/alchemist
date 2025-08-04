@@ -289,8 +289,13 @@ abstract class GoldensConfig extends Equatable {
     required this.renderShadows,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
-  }) : _filePathResolver = filePathResolver,
-       _theme = theme;
+    required this.tolerance,
+  })  : assert(
+          tolerance >= 0.0 && tolerance <= 1.0,
+          'The tolerance must be between 0.0 and 1.0, inclusive.',
+        ),
+        _filePathResolver = filePathResolver,
+        _theme = theme;
 
   /// Whether or not the golden tests should run.
   final bool enabled;
@@ -306,6 +311,19 @@ abstract class GoldensConfig extends Equatable {
   /// The rendering of shadows is not guaranteed to be pixel-for-pixel identical
   /// from version to version (or even from run to run).
   final bool renderShadows;
+
+  /// The tolerance used to compare golden images.
+  ///
+  /// This represents the percentage of pixels that can differ between the image
+  /// a golden test generates and the golden image it is compared against.
+  ///
+  /// If set to `0.0`, the generated image must be identical to the golden
+  /// image. If set to `1.0`, the generated image can be completely different
+  /// from the golden image, meaning the test will always pass.
+  ///
+  /// By default, this is set to `0.0`. It is recommended to keep this value as
+  /// low as possible to ensure a reasonable level of integrity of the tests.
+  final double tolerance;
 
   /// A name for the environment in which this test is run
   ///
@@ -352,6 +370,7 @@ abstract class GoldensConfig extends Equatable {
     bool? renderShadows,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
+    double? tolerance,
   });
 
   /// Creates a copy and merges this [GoldensConfig] with the given config,
@@ -360,12 +379,13 @@ abstract class GoldensConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-    obscureText,
-    enabled,
-    filePathResolver,
-    theme,
-    renderShadows,
-  ];
+        enabled,
+        obscureText,
+        renderShadows,
+        filePathResolver,
+        theme,
+        tolerance,
+      ];
 }
 
 /// {@template platform_goldens_config}
@@ -391,12 +411,22 @@ class PlatformGoldensConfig extends GoldensConfig {
   /// {@macro platform_goldens_config}
   const PlatformGoldensConfig({
     Set<HostPlatform>? platforms,
-    super.enabled = true,
-    super.obscureText = false,
-    super.renderShadows = true,
-    super.filePathResolver,
-    super.theme,
-  }) : _platforms = platforms;
+    bool enabled = true,
+    bool obscureText = false,
+    bool renderShadows = true,
+    FilePathResolver? filePathResolver,
+    ThemeData? theme,
+    double tolerance = 0.0,
+  })  : _platforms = platforms,
+        super(
+          enabled: enabled,
+          obscureText: obscureText,
+          renderShadows: renderShadows,
+          filePathResolver: filePathResolver,
+          theme: theme,
+          tolerance: tolerance,
+        );
+
 
   @override
   String get environmentName => HostPlatform.current().operatingSystem;
@@ -427,6 +457,7 @@ class PlatformGoldensConfig extends GoldensConfig {
     bool? renderShadows,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
+    double? tolerance,
   }) {
     return PlatformGoldensConfig(
       platforms: platforms ?? this.platforms,
@@ -435,6 +466,7 @@ class PlatformGoldensConfig extends GoldensConfig {
       renderShadows: renderShadows ?? this.renderShadows,
       filePathResolver: filePathResolver ?? this.filePathResolver,
       theme: theme ?? this.theme,
+      tolerance: tolerance ?? this.tolerance,
     );
   }
 
@@ -447,6 +479,7 @@ class PlatformGoldensConfig extends GoldensConfig {
       renderShadows: other?.renderShadows,
       filePathResolver: other?._filePathResolver,
       theme: other?._theme,
+      tolerance: other?.tolerance,
     );
   }
 
@@ -475,12 +508,20 @@ class PlatformGoldensConfig extends GoldensConfig {
 class CiGoldensConfig extends GoldensConfig {
   /// {@macro ci_goldens_config}
   const CiGoldensConfig({
-    super.enabled = true,
-    super.obscureText = true,
-    super.renderShadows = false,
-    super.filePathResolver,
-    super.theme,
-  });
+    bool enabled = true,
+    bool obscureText = true,
+    bool renderShadows = false,
+    FilePathResolver? filePathResolver,
+    ThemeData? theme,
+    double tolerance = 0.0,
+  }) : super(
+          enabled: enabled,
+          obscureText: obscureText,
+          renderShadows: renderShadows,
+          filePathResolver: filePathResolver,
+          theme: theme,
+          tolerance: tolerance,
+        );
 
   @override
   String get environmentName => 'CI';
@@ -492,6 +533,7 @@ class CiGoldensConfig extends GoldensConfig {
     bool? renderShadows,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
+    double? tolerance,
   }) {
     return CiGoldensConfig(
       enabled: enabled ?? this.enabled,
@@ -499,6 +541,7 @@ class CiGoldensConfig extends GoldensConfig {
       renderShadows: renderShadows ?? this.renderShadows,
       filePathResolver: filePathResolver ?? this.filePathResolver,
       theme: theme ?? this.theme,
+      tolerance: tolerance ?? this.tolerance,
     );
   }
 
@@ -510,6 +553,7 @@ class CiGoldensConfig extends GoldensConfig {
       renderShadows: other?.renderShadows,
       filePathResolver: other?._filePathResolver,
       theme: other?._theme,
+      tolerance: other?.tolerance,
     );
   }
 }

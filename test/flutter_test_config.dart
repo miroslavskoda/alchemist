@@ -105,6 +105,9 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
         useMaterial3: false,
         textTheme: const TextTheme().apply(fontFamily: 'Roboto'),
       ),
+//       platformGoldensConfig: PlatformGoldensConfig(
+//         enabled: enablePlatformTests,
+//       ),
       ciGoldensConfig: AlchemistConfig.current()
           .ciGoldensConfig //
           .copyWith(filePathResolver: filePathResolver, enabled: runningOnCi),
