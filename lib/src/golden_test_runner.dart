@@ -1,6 +1,6 @@
-import 'package:alchemist/src/alchemist_file_comparator.dart';
 import 'dart:ui' as ui;
 
+import 'package:alchemist/src/alchemist_file_comparator.dart';
 import 'package:alchemist/src/golden_test_adapter.dart';
 import 'package:alchemist/src/golden_test_theme.dart';
 import 'package:alchemist/src/interactions.dart';
@@ -154,8 +154,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
         tolerance: tolerance,
       );
     } else {
-      throw Exception(
-        '''
+      throw Exception('''
 Failed to set AlchemistFileComparator as the goldenFileComparator.
 
 Since this test has a tolerance value above 0.0, Alchemist must set a custom
@@ -169,8 +168,7 @@ are currently not supported.
 
 If you believe this is a bug, please file an issue at
   https://github.com/Betterment/alchemist/issues
-''',
-      );
+''');
     }
   }
 }

@@ -287,15 +287,15 @@ abstract class GoldensConfig extends Equatable {
     required this.enabled,
     required this.obscureText,
     required this.renderShadows,
+    required this.tolerance,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
-    required this.tolerance,
-  })  : assert(
-          tolerance >= 0.0 && tolerance <= 1.0,
-          'The tolerance must be between 0.0 and 1.0, inclusive.',
-        ),
-        _filePathResolver = filePathResolver,
-        _theme = theme;
+  }) : assert(
+         tolerance >= 0.0 && tolerance <= 1.0,
+         'The tolerance must be between 0.0 and 1.0, inclusive.',
+       ),
+       _filePathResolver = filePathResolver,
+       _theme = theme;
 
   /// Whether or not the golden tests should run.
   final bool enabled;
@@ -379,13 +379,13 @@ abstract class GoldensConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-        enabled,
-        obscureText,
-        renderShadows,
-        filePathResolver,
-        theme,
-        tolerance,
-      ];
+    enabled,
+    obscureText,
+    renderShadows,
+    filePathResolver,
+    theme,
+    tolerance,
+  ];
 }
 
 /// {@template platform_goldens_config}
@@ -411,22 +411,13 @@ class PlatformGoldensConfig extends GoldensConfig {
   /// {@macro platform_goldens_config}
   const PlatformGoldensConfig({
     Set<HostPlatform>? platforms,
-    bool enabled = true,
-    bool obscureText = false,
-    bool renderShadows = true,
-    FilePathResolver? filePathResolver,
-    ThemeData? theme,
-    double tolerance = 0.0,
-  })  : _platforms = platforms,
-        super(
-          enabled: enabled,
-          obscureText: obscureText,
-          renderShadows: renderShadows,
-          filePathResolver: filePathResolver,
-          theme: theme,
-          tolerance: tolerance,
-        );
-
+    super.enabled = true,
+    super.obscureText = false,
+    super.renderShadows = true,
+    super.filePathResolver,
+    super.theme,
+    super.tolerance = 0.0,
+  }) : _platforms = platforms;
 
   @override
   String get environmentName => HostPlatform.current().operatingSystem;
@@ -508,20 +499,13 @@ class PlatformGoldensConfig extends GoldensConfig {
 class CiGoldensConfig extends GoldensConfig {
   /// {@macro ci_goldens_config}
   const CiGoldensConfig({
-    bool enabled = true,
-    bool obscureText = true,
-    bool renderShadows = false,
-    FilePathResolver? filePathResolver,
-    ThemeData? theme,
-    double tolerance = 0.0,
-  }) : super(
-          enabled: enabled,
-          obscureText: obscureText,
-          renderShadows: renderShadows,
-          filePathResolver: filePathResolver,
-          theme: theme,
-          tolerance: tolerance,
-        );
+    super.enabled = true,
+    super.obscureText = true,
+    super.renderShadows = false,
+    super.filePathResolver,
+    super.theme,
+    super.tolerance = 0.0,
+  });
 
   @override
   String get environmentName => 'CI';

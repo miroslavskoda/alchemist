@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:alchemist/src/alchemist_file_comparator.dart';
 import 'package:alchemist/src/golden_test_adapter.dart';
 import 'package:alchemist/src/golden_test_runner.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ class MockAdapter extends Mock implements GoldenTestAdapter {}
 class MockUiImage extends Mock implements ui.Image {}
 
 class MockWidgetTester extends Mock implements WidgetTester {}
+
+class MockGoldenFileComparator extends Mock implements GoldenFileComparator {}
 
 void main() {
   setUpAll(() {
@@ -197,24 +200,89 @@ void main() {
     });
 
     group('attempts to set file comparator and', () {
-      test(
-        'succeeds when existing comparator is a '
-        'LocalFileComparator',
-        () {
-          // TODO(jeroen-meijer): Write test.
-        },
-      );
+      testWidgets('succeeds when existing comparator is a '
+          'LocalFileComparator', (tester) async {
+        final originalComparator = goldenFileComparator;
+        final localFileComparator = LocalFileComparator(Uri.parse('./'));
+        goldenFileComparator = localFileComparator;
 
-      test(
-        'succeeds when existing comparator is a '
-        'AlchemistFileComparator',
-        () {
-          // TODO(jeroen-meijer): Write test.
-        },
-      );
+        try {
+          await goldenTestRunner.run(
+            tester: tester,
+            goldenPath: 'path/to/golden',
+            widget: const SizedBox(),
+            tolerance: 0.1,
+          );
 
-      test('fails when existing comparator is not recognized', () {
-        // TODO(jeroen-meijer): Write test.
+          expect(
+            goldenFileComparator,
+            isA<AlchemistFileComparator>().having(
+              (comparator) => comparator.tolerance,
+              'tolerance',
+              0.1,
+            ),
+          );
+        } finally {
+          goldenFileComparator = originalComparator;
+        }
+      });
+
+      testWidgets('succeeds when existing comparator is a '
+          'AlchemistFileComparator', (tester) async {
+        final originalComparator = goldenFileComparator;
+        final alchemistComparator = AlchemistFileComparator(
+          basedir: Uri.parse('./'),
+          tolerance: 0,
+        );
+        goldenFileComparator = alchemistComparator;
+
+        try {
+          await goldenTestRunner.run(
+            tester: tester,
+            goldenPath: 'path/to/golden',
+            widget: const SizedBox(),
+            tolerance: 0.2,
+          );
+
+          expect(
+            goldenFileComparator,
+            isA<AlchemistFileComparator>().having(
+              (comparator) => comparator.tolerance,
+              'tolerance',
+              0.2,
+            ),
+          );
+        } finally {
+          goldenFileComparator = originalComparator;
+        }
+      });
+
+      testWidgets('fails when existing comparator is not recognized', (
+        tester,
+      ) async {
+        final originalComparator = goldenFileComparator;
+        final unrecognizedComparator = MockGoldenFileComparator();
+        goldenFileComparator = unrecognizedComparator;
+
+        try {
+          await expectLater(
+            goldenTestRunner.run(
+              tester: tester,
+              goldenPath: 'path/to/golden',
+              widget: const SizedBox(),
+              tolerance: 0.1,
+            ),
+            throwsA(
+              isA<Exception>().having(
+                (exception) => exception.toString(),
+                'message',
+                contains('Failed to set AlchemistFileComparator'),
+              ),
+            ),
+          );
+        } finally {
+          goldenFileComparator = originalComparator;
+        }
       });
     });
   });
