@@ -34,26 +34,30 @@ class FakeGoldenTestAdapter extends Mock implements GoldenTestAdapter {
 
   @override
   Future<void> pumpGoldenTest({
-    Key? rootKey,
     required WidgetTester tester,
     required double textScaleFactor,
     required BoxConstraints constraints,
     required bool obscureFont,
     required ThemeData? globalConfigTheme,
     required ThemeData? variantConfigTheme,
+    required GoldenTestTheme? goldenTestTheme,
     required PumpAction pumpBeforeTest,
     required PumpWidget pumpWidget,
     required Widget widget,
+    Key? rootKey,
   }) async {}
 
   @override
-  TestLifecycleFn get setUp => (dynamic Function() body) => body();
+  TestLifecycleFn get setUp =>
+      (dynamic Function() body) => body();
 
   @override
-  TestLifecycleFn get tearDown => (dynamic Function() body) => body();
+  TestLifecycleFn get tearDown =>
+      (dynamic Function() body) => body();
 
   @override
-  TestWidgetsFn get testWidgets => (
+  TestWidgetsFn get testWidgets =>
+      (
         String description,
         Future<void> Function(WidgetTester) callback, {
         bool? skip,
@@ -71,8 +75,8 @@ class FakeGoldenTestAdapter extends Mock implements GoldenTestAdapter {
 
   @override
   Future<T> withForceUpdateGoldenFiles<T>({
-    bool forceUpdate = false,
     required MatchesGoldenFileInvocation<T> callback,
+    bool forceUpdate = false,
   }) async {
     return callback();
   }
@@ -104,6 +108,7 @@ void main() {
           widget: any(named: 'widget'),
           globalConfigTheme: any(named: 'globalConfigTheme'),
           variantConfigTheme: any(named: 'variantConfigTheme'),
+          goldenTestTheme: any(named: 'goldenTestTheme'),
           forceUpdate: any(named: 'forceUpdate'),
           obscureText: any(named: 'obscureText'),
           renderShadows: any(named: 'renderShadows'),
@@ -137,12 +142,23 @@ void main() {
         primaryColor: Colors.red,
       );
       final ciTheme = ThemeData.light().copyWith(primaryColor: Colors.green);
-      final platformTheme =
-          ThemeData.light().copyWith(primaryColor: Colors.yellow);
+      final platformTheme = ThemeData.light().copyWith(
+        primaryColor: Colors.yellow,
+      );
+      final goldenTestTheme = GoldenTestTheme(
+        backgroundColor: Colors.blueGrey,
+        borderColor: Colors.orange,
+        nameTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 14,
+          fontWeight: ui.FontWeight.bold,
+        ),
+      );
       const ciRenderShadows = true;
       final config = AlchemistConfig(
         forceUpdateGoldenFiles: false,
         theme: alchemistTheme,
+        goldenTestTheme: goldenTestTheme,
         ciGoldensConfig: CiGoldensConfig(
           theme: ciTheme,
           renderShadows: ciRenderShadows,
@@ -177,6 +193,7 @@ void main() {
           widget: widget,
           globalConfigTheme: alchemistTheme,
           variantConfigTheme: ciTheme,
+          goldenTestTheme: goldenTestTheme,
           forceUpdate: any(named: 'forceUpdate'),
           obscureText: any(named: 'obscureText'),
           renderShadows: ciRenderShadows,
@@ -195,6 +212,7 @@ void main() {
           widget: widget,
           globalConfigTheme: alchemistTheme,
           variantConfigTheme: platformTheme,
+          goldenTestTheme: goldenTestTheme,
           forceUpdate: any(named: 'forceUpdate'),
           obscureText: any(named: 'obscureText'),
           renderShadows: any(named: 'renderShadows'),

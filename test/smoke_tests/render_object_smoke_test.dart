@@ -17,7 +17,7 @@ void main() {
 }
 
 class _CustomExampleRenderObject extends LeafRenderObjectWidget {
-  const _CustomExampleRenderObject({Key? key}) : super(key: key);
+  const _CustomExampleRenderObject();
 
   @override
   _CustomExampleRenderBox createRenderObject(BuildContext context) {
@@ -52,11 +52,6 @@ class _CustomExampleRenderBox extends RenderBox {
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
-    return constraints.constrain(
-      Size(
-        200,
-        constraints.maxHeight,
-      ),
-    );
+    return constraints.constrain(Size(200, constraints.maxHeight));
   }
 }

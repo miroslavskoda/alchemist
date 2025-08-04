@@ -1,5 +1,8 @@
 import 'package:alchemist/src/alchemist_file_comparator.dart';
+import 'dart:ui' as ui;
+
 import 'package:alchemist/src/golden_test_adapter.dart';
+import 'package:alchemist/src/golden_test_theme.dart';
 import 'package:alchemist/src/interactions.dart';
 import 'package:alchemist/src/pumps.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +22,7 @@ set goldenTestAdapter(GoldenTestAdapter value) => _goldenTestAdapter = value;
 /// {@template golden_test_runner}
 /// A utility class for running an individual golden test.
 /// {@endtemplate}
+// ignore: one_member_abstracts
 abstract class GoldenTestRunner {
   /// {@macro golden_test_runner}
   const GoldenTestRunner();
@@ -30,6 +34,7 @@ abstract class GoldenTestRunner {
     required Widget widget,
     required ThemeData? globalConfigTheme,
     required ThemeData? variantConfigTheme,
+    required GoldenTestTheme? goldenTestTheme,
     bool forceUpdate = false,
     bool obscureText = false,
     bool renderShadows = false,
@@ -57,6 +62,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
     required Widget widget,
     ThemeData? globalConfigTheme,
     ThemeData? variantConfigTheme,
+    GoldenTestTheme? goldenTestTheme,
     bool forceUpdate = false,
     bool obscureText = false,
     bool renderShadows = false,
@@ -77,6 +83,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
     final mementoDebugDisableShadows = debugDisableShadows;
     debugDisableShadows = !renderShadows;
 
+    Future<ui.Image>? imageFuture;
     try {
       await goldenTestAdapter.pumpGoldenTest(
         tester: tester,
@@ -86,6 +93,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
         obscureFont: obscureText,
         globalConfigTheme: globalConfigTheme,
         variantConfigTheme: variantConfigTheme,
+        goldenTestTheme: goldenTestTheme,
         pumpBeforeTest: pumpBeforeTest,
         pumpWidget: pumpWidget,
         widget: widget,
@@ -98,20 +106,24 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
 
       final finder = find.byKey(rootKey);
 
-      final toMatch = obscureText
-          ? goldenTestAdapter.getBlockedTextImage(
-              finder: finder,
-              tester: tester,
-            )
-          : finder;
+      if (obscureText) {
+        imageFuture = goldenTestAdapter.getBlockedTextImage(
+          finder: finder,
+          tester: tester,
+        );
+      }
+
+      final toMatch = imageFuture ?? finder;
 
       try {
         _attemptSetComparator(tolerance);
 
         await goldenTestAdapter.withForceUpdateGoldenFiles(
           forceUpdate: forceUpdate,
-          callback:
-              goldenTestAdapter.goldenFileExpectation(toMatch, goldenPath),
+          callback: goldenTestAdapter.goldenFileExpectation(
+            toMatch,
+            goldenPath,
+          ),
         );
         await cleanup?.call();
       } on TestFailure {
@@ -119,10 +131,14 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
       }
     } finally {
       debugDisableShadows = mementoDebugDisableShadows;
+      final image = await imageFuture;
+      image?.dispose();
 
       await tester.binding.setSurfaceSize(null);
       tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
+      addTearDown(() async {
+        tester.view.resetDevicePixelRatio();
+      });
     }
   }
 

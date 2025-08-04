@@ -13,11 +13,7 @@ class _TextCustomPainter extends CustomPainter {
       ..pushStyle(ui.TextStyle(color: const Color(0xFF0000FF)))
       ..addText('blue text');
     final paragraph = paragraphBuilder.build()
-      ..layout(
-        ui.ParagraphConstraints(
-          width: size.width,
-        ),
-      );
+      ..layout(ui.ParagraphConstraints(width: size.width));
     canvas.drawParagraph(paragraph, Offset.zero);
   }
 
@@ -44,32 +40,22 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
     }
 
-    Widget buildSubject({
-      Key? key,
-    }) {
+    Widget buildSubject({Key? key}) {
       return MaterialApp(
         key: key,
         debugShowCheckedModeBanner: false,
         home: const Scaffold(
+          backgroundColor: Color(0x0f000000),
           body: Padding(
             padding: EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'black text',
-                  style: TextStyle(color: Color(0xFF000000)),
-                ),
+                Text('black text', style: TextStyle(color: Color(0xFF000000))),
                 SizedBox(height: 3),
-                Text(
-                  'red text',
-                  style: TextStyle(color: Color(0xFFFF0000)),
-                ),
+                Text('red text', style: TextStyle(color: Color(0xFFFF0000))),
                 SizedBox(height: 3),
-                CustomPaint(
-                  painter: _TextCustomPainter(),
-                  size: Size(250, 20),
-                ),
+                CustomPaint(painter: _TextCustomPainter(), size: Size(250, 20)),
               ],
             ),
           ),
@@ -81,21 +67,14 @@ void main() {
       await setUpSurface(tester);
 
       const rootKey = Key('root');
-      await tester.pumpWidget(
-        buildSubject(
-          key: rootKey,
-        ),
-      );
+      await tester.pumpWidget(buildSubject(key: rootKey));
 
       final image = await goldenTestAdapter.getBlockedTextImage(
         finder: find.byKey(rootKey),
         tester: tester,
       );
 
-      await expectLater(
-        image,
-        matchesGoldenFile(goldenFilePath),
-      );
+      await expectLater(image, matchesGoldenFile(goldenFilePath));
     });
   });
 }

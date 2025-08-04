@@ -3,7 +3,8 @@ import 'package:alchemist/src/golden_test_scenario_constraints.dart';
 import 'package:flutter/material.dart';
 
 /// An internal [WidgetBuilder] that builds the widget it's given.
-WidgetBuilder _build(Widget build) => (context) => build;
+WidgetBuilder _build(Widget build) =>
+    (context) => build;
 
 /// {@template golden_test_scenario}
 /// A widget that displays its child with a label for use in golden tests.
@@ -23,37 +24,32 @@ WidgetBuilder _build(Widget build) => (context) => build;
 class GoldenTestScenario extends StatelessWidget {
   /// {@macro golden_test_scenario}
   GoldenTestScenario({
-    Key? key,
     required this.name,
     required Widget child,
+    super.key,
     this.constraints,
-  })  : builder = _build(child),
-        super(key: key);
+  }) : builder = _build(child);
 
   /// Creates a [GoldenTestScenario] with a [builder] function that allows
   /// access to the [BuildContext] of the widget.
   const GoldenTestScenario.builder({
-    Key? key,
     required this.name,
     required this.builder,
+    super.key,
     this.constraints,
-  }) : super(key: key);
+  });
 
-  /// Creates a [GoldenTestScenario] with a custom [textScaleFactor] that
+  /// Creates a [GoldenTestScenario] with a custom [textScaler] that
   /// applies a default scale of text to its child.
   GoldenTestScenario.withTextScaleFactor({
-    Key? key,
     required this.name,
-    required double textScaleFactor,
+    required TextScaler textScaler,
     required Widget child,
+    super.key,
     this.constraints,
-  })  : builder = _build(
-          _CustomTextScaleFactor(
-            textScaleFactor: textScaleFactor,
-            child: child,
-          ),
-        ),
-        super(key: key);
+  }) : builder = _build(
+         _CustomTextScaleFactor(textScaler: textScaler, child: child),
+       );
 
   /// The name of the scenario.
   ///
@@ -72,27 +68,30 @@ class GoldenTestScenario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final testTheme =
+        Theme.of(context).extension<GoldenTestTheme>() ??
+        AlchemistConfig.current().goldenTestTheme ??
+        GoldenTestTheme.standard();
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: testTheme.padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             name,
-            style: const TextStyle(fontSize: 18),
+            style: testTheme.nameTextStyle,
             textHeightBehavior: const TextHeightBehavior(
               applyHeightToFirstAscent: false,
             ),
           ),
           const SizedBox(height: 8),
           ConstrainedBox(
-            constraints: constraints ??
+            constraints:
+                constraints ??
                 GoldenTestScenarioConstraints.maybeOf(context) ??
                 const BoxConstraints(),
-            child: Builder(
-              builder: builder,
-            ),
+            child: Builder(builder: builder),
           ),
         ],
       ),
@@ -101,28 +100,23 @@ class GoldenTestScenario extends StatelessWidget {
 }
 
 /// {@template _custom_text_scale_factor}
-/// An internal widget used to apply a default [textScaleFactor] to its [child].
+/// An internal widget used to apply a default [textScaler] to its [child].
 /// {@endtemplate}
 @protected
 class _CustomTextScaleFactor extends StatelessWidget {
   /// {@macro _custom_text_scale_factor}
-  const _CustomTextScaleFactor({
-    required this.textScaleFactor,
-    required this.child,
-  });
+  const _CustomTextScaleFactor({required this.textScaler, required this.child});
 
-  /// The default text scale factor to apply to the [child].
-  final double textScaleFactor;
+  /// The TextScaler will be applied to the [child].
+  final TextScaler textScaler;
 
-  /// The child widget to apply the [textScaleFactor] to.
+  /// The child widget to apply the [textScaler] to.
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-        textScaleFactor: textScaleFactor,
-      ),
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: child,
     );
   }

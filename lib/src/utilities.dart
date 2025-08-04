@@ -44,24 +44,18 @@ extension GoldenTestWidgetTesterExtensions on WidgetTester {
     final elementAmount = finder.evaluate().length;
 
     if (elementAmount == 0) {
-      printToConsole(
-        '''
+      printToConsole('''
 No widgets found that match finder: $finder.
 No gestures will be performed.
 
 If this is intentional, consider not calling this method
-to avoid unnecessary overhead.''',
-      );
+to avoid unnecessary overhead.''');
     }
 
     return [
       for (var i = 0; i < elementAmount; i++)
         await startGesture(
-          getCenter(
-            finder.at(i),
-            warnIfMissed: true,
-            callee: 'pressAll',
-          ),
+          getCenter(finder.at(i), warnIfMissed: true, callee: 'pressAll'),
         ),
     ];
   }
@@ -80,34 +74,35 @@ extension GoldenTestThemeDataExtensions on ThemeData {
   static const obscuredTextFontFamily = 'Ahem';
 
   /// Strips all text packages from this theme's [ThemeData.textTheme] for use
-  /// in golden tests using [GoldenTestTextStyleExtensions.stripPackage].
+  /// in golden tests using
+  /// [GoldenTestTextStyleExtensions.stripAlchemistPackage].
   ///
   /// Only used internally and should not be used by consumers.
   @protected
   ThemeData stripTextPackages() {
     return copyWith(
       textTheme: textTheme.copyWith(
-        displayLarge: textTheme.displayLarge?.stripPackage(),
-        displayMedium: textTheme.displayMedium?.stripPackage(),
-        displaySmall: textTheme.displaySmall?.stripPackage(),
-        headlineMedium: textTheme.headlineMedium?.stripPackage(),
-        headlineSmall: textTheme.headlineSmall?.stripPackage(),
-        titleLarge: textTheme.titleLarge?.stripPackage(),
-        titleMedium: textTheme.titleMedium?.stripPackage(),
-        titleSmall: textTheme.titleSmall?.stripPackage(),
-        bodyLarge: textTheme.bodyLarge?.stripPackage(),
-        bodyMedium: textTheme.bodyMedium?.stripPackage(),
-        bodySmall: textTheme.bodySmall?.stripPackage(),
-        labelLarge: textTheme.labelLarge?.stripPackage(),
-        labelSmall: textTheme.labelSmall?.stripPackage(),
+        displayLarge: textTheme.displayLarge?.stripAlchemistPackage(),
+        displayMedium: textTheme.displayMedium?.stripAlchemistPackage(),
+        displaySmall: textTheme.displaySmall?.stripAlchemistPackage(),
+        headlineMedium: textTheme.headlineMedium?.stripAlchemistPackage(),
+        headlineSmall: textTheme.headlineSmall?.stripAlchemistPackage(),
+        titleLarge: textTheme.titleLarge?.stripAlchemistPackage(),
+        titleMedium: textTheme.titleMedium?.stripAlchemistPackage(),
+        titleSmall: textTheme.titleSmall?.stripAlchemistPackage(),
+        bodyLarge: textTheme.bodyLarge?.stripAlchemistPackage(),
+        bodyMedium: textTheme.bodyMedium?.stripAlchemistPackage(),
+        bodySmall: textTheme.bodySmall?.stripAlchemistPackage(),
+        labelLarge: textTheme.labelLarge?.stripAlchemistPackage(),
+        labelSmall: textTheme.labelSmall?.stripAlchemistPackage(),
       ),
       floatingActionButtonTheme: floatingActionButtonTheme.copyWith(
-        extendedTextStyle:
-            floatingActionButtonTheme.extendedTextStyle?.stripPackage(),
+        extendedTextStyle: floatingActionButtonTheme.extendedTextStyle
+            ?.stripAlchemistPackage(),
       ),
       dialogTheme: dialogTheme.copyWith(
-        titleTextStyle: dialogTheme.titleTextStyle?.stripPackage(),
-        contentTextStyle: dialogTheme.contentTextStyle?.stripPackage(),
+        titleTextStyle: dialogTheme.titleTextStyle?.stripAlchemistPackage(),
+        contentTextStyle: dialogTheme.contentTextStyle?.stripAlchemistPackage(),
       ),
     );
   }
@@ -120,9 +115,7 @@ extension GoldenTestThemeDataExtensions on ThemeData {
   @protected
   ThemeData applyObscuredFontFamily() {
     return copyWith(
-      textTheme: textTheme.apply(
-        fontFamily: obscuredTextFontFamily,
-      ),
+      textTheme: textTheme.apply(fontFamily: obscuredTextFontFamily),
     );
   }
 }
@@ -135,32 +128,9 @@ extension GoldenTestTextStyleExtensions on TextStyle {
   /// Strips the package name from this text style's [TextStyle.fontFamily] for
   /// use in golden tests.
   @protected
-  TextStyle stripPackage() {
-    return TextStyle(
-      inherit: inherit,
-      color: color,
-      backgroundColor: backgroundColor,
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      fontStyle: fontStyle,
-      letterSpacing: letterSpacing,
-      wordSpacing: wordSpacing,
-      textBaseline: textBaseline,
-      height: height,
-      leadingDistribution: leadingDistribution,
-      locale: locale,
-      foreground: foreground,
-      background: background,
-      shadows: shadows,
-      fontFeatures: fontFeatures,
-      decoration: decoration,
-      decorationColor: decorationColor,
-      decorationStyle: decorationStyle,
-      decorationThickness: decorationThickness,
-      debugLabel: debugLabel,
-      fontFamily: fontFamily?.stripFontFamilyPackageName(),
-      fontFamilyFallback: fontFamilyFallback,
-      overflow: overflow,
+  TextStyle stripAlchemistPackage() {
+    return copyWith(
+      fontFamily: fontFamily?.stripFontFamilyAlchemistPackageName(),
     );
   }
 }
@@ -168,8 +138,8 @@ extension GoldenTestTextStyleExtensions on TextStyle {
 /// Strips the package name from the given font family for use in golden tests.
 extension FontFamilyStringExtensions on String {
   /// Strips the package name from this font family for use in golden tests.
-  String stripFontFamilyPackageName() {
-    return replaceAll(RegExp(r'packages\/[^\/]*\/'), '');
+  String stripFontFamilyAlchemistPackageName() {
+    return replaceAll(RegExp(r'packages\/alchemist\/'), '');
   }
 }
 

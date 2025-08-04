@@ -24,9 +24,7 @@ set goldenTestRunner(GoldenTestRunner value) => _goldenTestRunner = value;
 Future<void> _setUpGoldenTests() async {
   await loadFonts();
 
-  RenderErrorBox.textStyle = ui.TextStyle(
-    fontFamily: 'Roboto',
-  );
+  RenderErrorBox.textStyle = ui.TextStyle(fontFamily: 'Roboto');
 }
 
 /// Loads a font for use in golden tests.
@@ -38,11 +36,13 @@ Future<void> _setUpGoldenTests() async {
 Future<void> loadFonts() async {
   final bundle = rootBundle;
   final fontManifestString = await bundle.loadString('FontManifest.json');
-  final fontManifest = (json.decode(fontManifestString) as List<dynamic>)
-      .map((dynamic x) => x as Map<String, dynamic>);
+  final fontManifest = (json.decode(fontManifestString) as List<dynamic>).map(
+    (dynamic x) => x as Map<String, dynamic>,
+  );
 
   for (final entry in fontManifest) {
-    final family = (entry['family'] as String).stripFontFamilyPackageName();
+    final family = (entry['family'] as String)
+        .stripFontFamilyAlchemistPackageName();
 
     final fontAssets = [
       for (final fontAssetEntry in entry['fonts'] as List<dynamic>)
@@ -133,6 +133,7 @@ Future<void> loadFonts() async {
 Future<void> goldenTest(
   String description, {
   required String fileName,
+  required ValueGetter<Widget> builder,
   bool skip = false,
   List<String> tags = const ['golden'],
   double textScaleFactor = 1.0,
@@ -140,7 +141,6 @@ Future<void> goldenTest(
   PumpAction pumpBeforeTest = onlyPumpAndSettle,
   PumpWidget pumpWidget = onlyPumpWidget,
   Interaction? whilePerforming,
-  required ValueGetter<Widget> builder,
 }) async {
   if (skip) return;
 
@@ -175,6 +175,7 @@ Future<void> goldenTest(
         widget: builder(),
         globalConfigTheme: config.theme,
         variantConfigTheme: variantConfig.theme,
+        goldenTestTheme: config.goldenTestTheme,
         forceUpdate: config.forceUpdateGoldenFiles,
         obscureText: variantConfig.obscureText,
         renderShadows: variantConfig.renderShadows,

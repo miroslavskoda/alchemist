@@ -44,12 +44,12 @@ typedef ColumnWidthBuilder = TableColumnWidth? Function(int columns);
 class GoldenTestGroup extends StatelessWidget {
   /// {@macro golden_test_group}
   const GoldenTestGroup({
-    Key? key,
+    required this.children,
+    super.key,
     this.columns,
     this.columnWidthBuilder,
     this.scenarioConstraints,
-    required this.children,
-  }) : super(key: key);
+  });
 
   /// The number of columns in the grid.
   ///
@@ -112,15 +112,18 @@ class GoldenTestGroup extends StatelessWidget {
       }
     }
 
+    final testTheme =
+        Theme.of(context).extension<GoldenTestTheme>() ??
+        AlchemistConfig.current().goldenTestTheme ??
+        GoldenTestTheme.standard();
+
     return GoldenTestScenarioConstraints(
       constraints: scenarioConstraints,
       child: Table(
         defaultColumnWidth: const IntrinsicColumnWidth(),
         columnWidths: columnWidths,
         border: TableBorder.symmetric(
-          inside: BorderSide(
-            color: Colors.black.withOpacity(0.3),
-          ),
+          inside: BorderSide(color: testTheme.borderColor),
         ),
         children: [
           for (int i = 0; i < _effectiveRows; i++)
