@@ -288,11 +288,16 @@ abstract class GoldensConfig extends Equatable {
     required this.obscureText,
     required this.renderShadows,
     required this.tolerance,
+    this.fileToleranceInBytes = 0,
     FilePathResolver? filePathResolver,
     ThemeData? theme,
   }) : assert(
          tolerance >= 0.0 && tolerance <= 1.0,
          'The tolerance must be between 0.0 and 1.0, inclusive.',
+       ),
+       assert(
+         fileToleranceInBytes >= 0,
+         'The fileToleranceInBytes must be greater than or equal to 0.',
        ),
        _filePathResolver = filePathResolver,
        _theme = theme;
@@ -324,6 +329,20 @@ abstract class GoldensConfig extends Equatable {
   /// By default, this is set to `0.0`. It is recommended to keep this value as
   /// low as possible to ensure a reasonable level of integrity of the tests.
   final double tolerance;
+
+  /// The file size tolerance in bytes for update operations.
+  ///
+  /// When updating golden files (with `--update-goldens`), if the difference
+  /// in file size between the new and existing golden file is less than or
+  /// equal to this value, the golden file will NOT be updated.
+  ///
+  /// This helps avoid unnecessary golden file updates due to minor compression
+  /// differences or other insignificant changes, particularly for formats like
+  /// JPEG where small variations are common.
+  ///
+  /// By default, this is set to `0`, meaning any size difference will trigger
+  /// an update. A recommended value for JPEG files is `50` bytes.
+  final int fileToleranceInBytes;
 
   /// A name for the environment in which this test is run
   ///
@@ -371,6 +390,7 @@ abstract class GoldensConfig extends Equatable {
     FilePathResolver? filePathResolver,
     ThemeData? theme,
     double? tolerance,
+    int? fileToleranceInBytes,
   });
 
   /// Creates a copy and merges this [GoldensConfig] with the given config,
@@ -385,6 +405,7 @@ abstract class GoldensConfig extends Equatable {
     filePathResolver,
     theme,
     tolerance,
+    fileToleranceInBytes,
   ];
 }
 
@@ -417,6 +438,7 @@ class PlatformGoldensConfig extends GoldensConfig {
     super.filePathResolver,
     super.theme,
     super.tolerance = 0.0,
+    super.fileToleranceInBytes = 0,
   }) : _platforms = platforms;
 
   @override
@@ -449,6 +471,7 @@ class PlatformGoldensConfig extends GoldensConfig {
     FilePathResolver? filePathResolver,
     ThemeData? theme,
     double? tolerance,
+    int? fileToleranceInBytes,
   }) {
     return PlatformGoldensConfig(
       platforms: platforms ?? this.platforms,
@@ -458,6 +481,7 @@ class PlatformGoldensConfig extends GoldensConfig {
       filePathResolver: filePathResolver ?? this.filePathResolver,
       theme: theme ?? this.theme,
       tolerance: tolerance ?? this.tolerance,
+      fileToleranceInBytes: fileToleranceInBytes ?? this.fileToleranceInBytes,
     );
   }
 
@@ -471,6 +495,7 @@ class PlatformGoldensConfig extends GoldensConfig {
       filePathResolver: other?._filePathResolver,
       theme: other?._theme,
       tolerance: other?.tolerance,
+      fileToleranceInBytes: other?.fileToleranceInBytes,
     );
   }
 
@@ -505,6 +530,7 @@ class CiGoldensConfig extends GoldensConfig {
     super.filePathResolver,
     super.theme,
     super.tolerance = 0.0,
+    super.fileToleranceInBytes = 0,
   });
 
   @override
@@ -518,6 +544,7 @@ class CiGoldensConfig extends GoldensConfig {
     FilePathResolver? filePathResolver,
     ThemeData? theme,
     double? tolerance,
+    int? fileToleranceInBytes,
   }) {
     return CiGoldensConfig(
       enabled: enabled ?? this.enabled,
@@ -526,6 +553,7 @@ class CiGoldensConfig extends GoldensConfig {
       filePathResolver: filePathResolver ?? this.filePathResolver,
       theme: theme ?? this.theme,
       tolerance: tolerance ?? this.tolerance,
+      fileToleranceInBytes: fileToleranceInBytes ?? this.fileToleranceInBytes,
     );
   }
 
@@ -538,6 +566,7 @@ class CiGoldensConfig extends GoldensConfig {
       filePathResolver: other?._filePathResolver,
       theme: other?._theme,
       tolerance: other?.tolerance,
+      fileToleranceInBytes: other?.fileToleranceInBytes,
     );
   }
 }

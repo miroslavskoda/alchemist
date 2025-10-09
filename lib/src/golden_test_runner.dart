@@ -39,6 +39,7 @@ abstract class GoldenTestRunner {
     bool obscureText = false,
     bool renderShadows = false,
     double tolerance = 0.0,
+    int fileToleranceInBytes = 0,
     double textScaleFactor = 1.0,
     BoxConstraints constraints = const BoxConstraints(),
     PumpAction pumpBeforeTest = onlyPumpAndSettle,
@@ -67,6 +68,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
     bool obscureText = false,
     bool renderShadows = false,
     double tolerance = 0.0,
+    int fileToleranceInBytes = 0,
     double textScaleFactor = 1.0,
     BoxConstraints constraints = const BoxConstraints(),
     PumpAction pumpBeforeTest = onlyPumpAndSettle,
@@ -116,7 +118,7 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
       final toMatch = imageFuture ?? finder;
 
       try {
-        _attemptSetComparator(tolerance);
+        _attemptSetComparator(tolerance, fileToleranceInBytes);
 
         await goldenTestAdapter.withForceUpdateGoldenFiles(
           forceUpdate: forceUpdate,
@@ -142,16 +144,18 @@ class FlutterGoldenTestRunner extends GoldenTestRunner {
     }
   }
 
-  void _attemptSetComparator(double tolerance) {
+  void _attemptSetComparator(double tolerance, int fileToleranceInBytes) {
     if (goldenFileComparator is LocalFileComparator) {
       goldenFileComparator = AlchemistFileComparator.fromLocalFileComparator(
         goldenFileComparator as LocalFileComparator,
         tolerance: tolerance,
+        fileToleranceInBytes: fileToleranceInBytes,
       );
     } else if (goldenFileComparator is AlchemistFileComparator) {
       goldenFileComparator = AlchemistFileComparator(
         basedir: (goldenFileComparator as AlchemistFileComparator).basedir,
         tolerance: tolerance,
+        fileToleranceInBytes: fileToleranceInBytes,
       );
     } else {
       throw Exception('''

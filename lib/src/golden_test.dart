@@ -180,6 +180,7 @@ Future<void> goldenTest(
         obscureText: variantConfig.obscureText,
         renderShadows: variantConfig.renderShadows,
         tolerance: variantConfig.tolerance,
+        fileToleranceInBytes: variantConfig.fileToleranceInBytes,
         textScaleFactor: textScaleFactor,
         constraints: constraints,
         pumpBeforeTest: pumpBeforeTest,
