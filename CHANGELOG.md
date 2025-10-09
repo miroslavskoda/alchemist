@@ -1,3 +1,32 @@
+# 0.13.0
+
+## What's New
+
+### Tolerance Parameters for Robust Golden Testing
+* feat: Add `tolerance` parameter for pixel-level image comparison
+  - Addresses brittleness in golden tests caused by minor pixel differences across platforms and rendering environments
+  - Configurable percentage of pixel differences allowed (0.0 = exact match, 1.0 = 100% difference)
+  - Particularly valuable for large test suites (260+ tests) running in multiple CI/CD environments
+  - Recommended value: `0.01` (1%) for production applications to catch meaningful discrepancies while remaining reliable
+  - Available in both `PlatformGoldensConfig` and `CiGoldensConfig`
+  - Default value of `0.0` maintains existing behavior (exact pixel matching)
+
+* feat: Add `fileToleranceInBytes` parameter to prevent unnecessary golden file updates
+  - Configurable tolerance for file size differences during golden updates
+  - Particularly useful for JPEG files where small compression variations are common
+  - Helps reduce PR noise by skipping updates when size differences are within tolerance (e.g., ≤50 bytes)
+  - Available in both `PlatformGoldensConfig` and `CiGoldensConfig`
+  - Default value of `0` maintains existing behavior (any difference triggers update)
+
+### Testing Improvements
+* test: Complete test coverage for `AlchemistFileComparator`
+  - Added comprehensive tests for `compare()`, `update()`, and `getGoldenBytes()` methods
+  - Added tests for file size tolerance mechanism
+* test: Complete test coverage for `GoldenTestRunner`
+  - Added tests for file comparator setting with `LocalFileComparator`
+  - Added tests for file comparator setting with `AlchemistFileComparator`
+  - Added tests for unrecognized comparator error handling
+
 # 0.12.1
 
 ## What's Changed

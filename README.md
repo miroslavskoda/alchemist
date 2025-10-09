@@ -229,6 +229,54 @@ Alongside these arguments, the `PlatformGoldensConfig` contains an additional se
 | ----------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Set<HostPlatform> platforms` | All platforms | The platforms that platform golden tests should run on. By default, this is set to all platforms, meaning that a golden file will be generated if the current platform matches any platforms in the provided set. |
 
+Both config classes also support tolerance parameters for more robust testing:
+
+| Field                      | Default | Description                                                                                                                                                                                                                                                              |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `double tolerance`         | `0.0`   | The tolerance for pixel differences when comparing images. A value of `0.0` requires exact pixel matches, while `1.0` allows complete difference. Recommended: `0.01` (1%) for production apps with large test suites.                                                  |
+| `int fileToleranceInBytes` | `0`     | The tolerance for file size differences during golden updates. When set, golden files are only updated if the size difference exceeds this threshold. Useful for preventing unnecessary updates due to minor compression variations. Recommended: `50` bytes for JPEG files. |
+
+##### Tolerance Configuration
+
+Alchemist supports configurable tolerance for both pixel-level image comparison and file size differences during golden updates.
+
+**Pixel Tolerance (`tolerance`)**
+
+The original Alchemist package lacked a tolerance parameter for image comparison, which made golden tests brittle and prone to failure due to minor pixel differences across platforms and rendering environments. For financial applications running large test suites (e.g., 260+ golden tests) in multiple CI/CD environments, even negligible rendering variations would cause failures. 
+
+The `tolerance` parameter addresses this by allowing a configurable percentage of pixel differences (default `0.0` for exact matches, up to `1.0` for 100% difference). A recommended value for production applications with extensive test suites is `0.01` (1%), which allows image comparisons to remain reliable while still catching meaningful visual discrepancies.
+
+**File Size Tolerance (`fileToleranceInBytes`)**
+
+When updating golden files with `--update-goldens`, minor compression variations (especially in JPEG files) can cause unnecessary file updates that clutter pull requests with changes that aren't visually meaningful. The `fileToleranceInBytes` parameter prevents these updates by skipping file writes when the size difference is within the specified threshold.
+
+For example, setting `fileToleranceInBytes: 50` will prevent golden file updates if the new file differs by 50 bytes or less from the existing file, significantly reducing PR noise while maintaining visual test integrity.
+
+**Example Configuration**
+
+```dart
+import 'dart:async';
+import 'package:alchemist/alchemist.dart';
+
+Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  return AlchemistConfig.runWithConfig(
+    config: const AlchemistConfig(
+      platformGoldensConfig: PlatformGoldensConfig(
+        enabled: true,
+        tolerance: 0.01, // Allow 1% pixel difference
+        fileToleranceInBytes: 50, // Skip updates for ≤50 byte differences
+      ),
+      ciGoldensConfig: CiGoldensConfig(
+        enabled: true,
+        tolerance: 0.01,
+        fileToleranceInBytes: 50,
+      ),
+    ),
+    run: testMain,
+  );
+}
+```
+
 ##### Advanced theming
 
 In addition to the `theme` property on the `AlchemistConfig`, `CiGoldensConfig` and `PlatformGoldensConfig` classes, Alchemist also supports inherited theming. This means that any theme provided through a custom `pumpWidget` callback given to `goldenTest` will be used instead of the `theme` property on the `AlchemistConfig`.
